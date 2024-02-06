@@ -3,6 +3,7 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html).
 
 from collections import OrderedDict
+
 from . import base
 
 
@@ -46,9 +47,19 @@ class OdooConfig(base.OdooModule):
 
     def execute_config(self, config):
         for key in config:
-            if isinstance(config[key], str) and config[key].startswith('get_'):
-                config[key] = self.safe_eval(config[key])
+            if isinstance(config[key], str):
+                if '%' not in config[key] and config[key].startswith('get_'):
+                    config[key] = self.safe_eval(config[key])
+        for key in config:
+            if isinstance(config[key], str):
+                if '%' in config[key]:
+                    config[key] = config[key] % config
+                if config[key].startswith('get_'):
+                    config[key] = self.safe_eval(config[key])
+
         domain = []
+        if 'company_id' in config:
+            domain.append(('company_id', '=', config['company_id']))
         config_ids = self.execute_odoo('res.config.settings', 'search', [domain], {'context': self._context})
         if config_ids:
             config_id = config_ids[-1]

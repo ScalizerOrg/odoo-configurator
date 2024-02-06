@@ -4,11 +4,11 @@
 
 import logging
 from collections import OrderedDict
-from ..odoo_connection import OdooConnection
-from ..keepass import KeepassCli
-from ..bitwarden import Bitwarden
 
+from ..bitwarden import Bitwarden
+from ..keepass import KeepassCli
 from ..logging import get_logger
+from ..odoo_connection import OdooConnection
 
 
 class OdooModule:
@@ -91,7 +91,7 @@ class OdooModule:
                             i = self.safe_eval(i)
                         tmp.append(i)
                     config[key] = tmp
-                elif isinstance(config[key], str) and config[key].startswith('get_'):
+                elif isinstance(config[key], str) and config[key].startswith('get_') and '%' not in config[key]:
                     config[key] = self.safe_eval(config[key])
                 elif isinstance(config[key], (dict, OrderedDict)) and config[key].get(
                         'values', '') and not config[key].get('force_id', ''):
