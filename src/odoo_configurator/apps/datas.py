@@ -2,8 +2,8 @@
 # Copyright (C) 2023 - Teclib'ERP (<https://www.teclib-erp.com>).
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html).
 
-from collections import OrderedDict
 from ast import literal_eval
+from collections import OrderedDict
 
 from . import base
 from .config import OdooConfig

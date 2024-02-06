@@ -57,6 +57,10 @@ class OdooConfig(base.OdooModule):
                 if config[key].startswith('get_'):
                     config[key] = self.safe_eval(config[key])
 
+        if 'context' in config:
+            context = self._context
+            context.update(config.pop('context'))
+
         domain = []
         if 'company_id' in config:
             domain.append(('company_id', '=', config['company_id']))
