@@ -307,7 +307,7 @@ To set groups on a user you can remove previous groups with "unlink all".
                       Deactivate Partner Title doctor:
                           model: res.partner.title
                           search_value_xml_id: base.res_partner_title_doctor
-                          deactivate: "[('id', '=', search_value_xml_id)]"
+                          deactivate: "[('id', '=', 'search_value_xml_id')]"
         ```
 
 ## Translations
