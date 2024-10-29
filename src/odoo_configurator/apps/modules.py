@@ -32,7 +32,8 @@ class OdooModules(base.OdooModule):
         self.uninstall_modules(datas)
 
     def install_modules(self, config):
-        self.install_odoo(config.get('modules', []))
+        if config.get('modules', []):
+            self.install_odoo(config.get('modules', []))
         for key in config:
             if isinstance(config.get(key), dict) or isinstance(config.get(key), OrderedDict):
                 modules = config.get(key).get('modules', [])
@@ -50,7 +51,8 @@ class OdooModules(base.OdooModule):
                     self.update_module_odoo(modules)
 
     def uninstall_modules(self, config):
-        self.uninstall_odoo(config.get('uninstall_modules', []))
+        if config.get('uninstall_modules', []):
+            self.uninstall_odoo(config.get('uninstall_modules', []))
         for key in config:
             if isinstance(config.get(key), dict) or isinstance(config.get(key), OrderedDict):
                 modules = config.get(key).get('uninstall_modules', [])
