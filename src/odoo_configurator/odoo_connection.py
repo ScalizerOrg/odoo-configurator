@@ -75,7 +75,7 @@ class OdooConnection:
         self._load_cache()
         self._compute_url()
         try:
-            self.odoo = Orm(self._url, self._dbname, self._user, self._password)
+            self.odoo = Orm(self._url, self._dbname, self._user, self._password, debug_xmlrpc=debug_xmlrpc)
         except ConnectionError:
             exit(1)
         except Exception as err:
