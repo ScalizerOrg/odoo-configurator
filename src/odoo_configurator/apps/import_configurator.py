@@ -63,6 +63,7 @@ class ImportConfigurator(base.OdooModule):
         self.display_name_prefix_fields = display_name_prefix_fields
         if kwargs.get('ids'):
             res_ids = [self.get_id_from_xml_id(xml_id) for xml_id in kwargs.get('ids')]
+            self.logger.info("Import %s ids : %s", model, res_ids)
             domain = [('id', 'in', res_ids)]
         if not model:
             return '', []
