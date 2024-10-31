@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
  - Allows to pass a list of xmlid to import
  - Allows to do csv imports in script mode
+ - load_batch method now returns response from API
+ - Caching of external_ids is now executed only when explicitly needed
+ - Caching of modules is now executed only when explicitly needed
 
 ## [3.6.1] - 2024-09-30
 
