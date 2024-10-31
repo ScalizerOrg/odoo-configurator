@@ -107,7 +107,7 @@ class OdooModules(base.OdooModule):
             for module in modules:
                 self.logger.info('\t\t* %s' % module)
                 if self._uninstalled_modules_cache.get(module).get('state') != 'uninstalled':
-                    to_uninstall.append(self._modules_cache.get(module).get('id'))
+                    to_uninstall.append(self._uninstalled_modules_cache.get(module).get('id'))
 
             for m in to_uninstall:
                 self.execute_odoo('ir.module.module', 'button_immediate_uninstall', [m], no_raise=True)
