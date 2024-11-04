@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+ - Added a new class for utility functions => utils.py
+ - new method get_env_var() to get variable environment from yaml files
+
+## [3.6.2] - 2024-11-04
+
+### Added
+
  - Allows to pass a list of xmlid to import
  - Allows to do csv imports in script mode
  - load_batch method now returns response from API
