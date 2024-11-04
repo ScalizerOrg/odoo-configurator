@@ -7,6 +7,7 @@ from collections import OrderedDict
 from ..odoo_connection import OdooConnection
 from ..keepass import KeepassCli
 from ..bitwarden import Bitwarden
+from ..utils import Utils
 
 from ..logging import get_logger
 
@@ -18,6 +19,7 @@ class OdooModule:
     def __init__(self, configurator):
         self._configurator = configurator
         self._connection = configurator.connection
+        self._utils = configurator.utils
         self._keepass_cli = configurator.keepass_cli
         self._bitwarden_cli = configurator.bitwarden_cli
         self._import_manager = configurator.import_manager
@@ -51,10 +53,10 @@ class OdooModule:
         raise NotImplementedError
 
     def _published_objects(self):
-        return self._connection, self._keepass_cli, self._bitwarden_cli
+        return self._connection, self._keepass_cli, self._bitwarden_cli, self._utils
 
     def _published_class(self):
-        return OdooConnection, KeepassCli, Bitwarden
+        return OdooConnection, KeepassCli, Bitwarden, Utils
 
     def install_mode(self):
         if 'install' in self._mode:
