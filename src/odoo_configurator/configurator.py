@@ -215,6 +215,12 @@ class Configurator:
     def get_log(self):
         return "\n".join(self.log_history)
 
+    def get_external_config_xmlid_cache(self):
+        domain = [['module', '=', 'external_config']]
+        xmlid_datas = self.connection.execute_odoo('ir.model.data', 'search_read', [domain, ['name', 'res_id']], {'context': {}})
+        for xmlid_data in xmlid_datas:
+            self.xmlid_cache['external_config.%s' % xmlid_data['name']] = xmlid_data['res_id']
+
     def show(self):
         pass
         # logger.info('show')

@@ -180,6 +180,8 @@ class OdooConnection:
         return self.execute_odoo(model, 'search', args, {'context': context})
 
     def get_ref(self, external_id):
+        if not self.xmlid_cache:  # load xml_id cache
+            self._configurator.get_external_config_xmlid_cache()
         if external_id in self.xmlid_cache:
             return self.xmlid_cache[external_id]
         res = self.execute_odoo('ir.model.data',
