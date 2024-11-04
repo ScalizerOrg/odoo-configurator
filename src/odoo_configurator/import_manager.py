@@ -153,7 +153,7 @@ class ImportManager:
             # print(load_keys)
             # print(data)
             load_datas[-1].append([data[i] for i in load_keys])
-
+        res = {}
         cc = 0
         for load_data in load_datas:
             start_batch = datetime.now()
@@ -184,6 +184,7 @@ class ImportManager:
 
         stop = datetime.now()
         self.logger.info("\t\t\tTotal time %s" % (stop - start))
+        return res
 
     def set_params(self, params):
 

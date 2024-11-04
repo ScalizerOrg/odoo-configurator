@@ -60,14 +60,7 @@ class OdooDatas(base.OdooModule):
 
     def execute_update_config_datas(self):
         self.logger.info("Apply %s" % self._name)
-        self.get_external_config_xmlid_cache()
         self.execute(self._datas)
-
-    def get_external_config_xmlid_cache(self):
-        domain = [['module', '=', 'external_config']]
-        datas = self.execute_odoo('ir.model.data', 'search_read', [domain, ['name', 'res_id']], {'context': {}})
-        for data in datas:
-            self._configurator.xmlid_cache['external_config.%s' % data['name']] = data['res_id']
 
     def execute_config(self, config):
         if config:
@@ -245,6 +238,8 @@ class OdooDatas(base.OdooModule):
             if '.' not in force_id:
                 force_id = "external_config." + force_id
             values['id'] = force_id
+            if not self._configurator.xmlid_cache: #load xml_id cache
+                self._configurator.get_external_config_xmlid_cache()
             if force_id in self._configurator.xmlid_cache:
                 return values, self._configurator.xmlid_cache[force_id]
             module, name = force_id.split('.')
