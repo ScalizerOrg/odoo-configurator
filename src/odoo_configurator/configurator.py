@@ -33,6 +33,7 @@ from .odoo_connection import OdooConnection
 from .odoo_connection import get_dir_full_path
 from .keepass import KeepassCli
 from .bitwarden import Bitwarden
+from .utils import Utils
 
 logger = get_logger(__name__)
 
@@ -73,6 +74,7 @@ class Configurator:
         self.log_history = []
         logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
+        self.utils = Utils(self)
         self.keepass_cli = KeepassCli(self, keepass_password=keepass)
         self.bitwarden_cli = Bitwarden(self)
         self.prepare_odoo_connection()
