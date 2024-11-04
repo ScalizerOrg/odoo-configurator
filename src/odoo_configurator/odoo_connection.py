@@ -78,6 +78,9 @@ class OdooConnection:
             self.odoo = Orm(self._url, self._dbname, self._user, self._password, debug_xmlrpc=debug_xmlrpc)
         except ConnectionError:
             exit(1)
+        except xmlrpc.client.Fault as err:
+            self.logger.error(err.faultString)
+            exit(1)
         except Exception as err:
             self.logger.error(err)
         if createdb:
