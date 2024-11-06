@@ -13,6 +13,10 @@ from ..sql import SqlConnection
 class OdooImports(base.OdooModule):
     _name = "Imports"
 
+    def __init__(self, configurator, auto_apply=True):
+        self.auto_apply = auto_apply
+        super().__init__(configurator)
+
     def get_func(self, data):
         if data.get('specific_import', False):
             if data.get('file_path', ''):

@@ -44,7 +44,7 @@ class OdooDatas(base.OdooModule):
         odoo_config = OdooConfig(self._configurator, auto_apply=False)
         odoo_modules = OdooModules(self._configurator)
         odoo_users = OdooUsers(self._configurator)
-        odoo_imports = OdooImports(self._configurator)
+        odoo_imports = OdooImports(self._configurator, auto_apply=False)
         for script in scripts:
             self.logger.info("Script - %s" % script.get('title'))
             odoo_modules.install_config_modules(script)
