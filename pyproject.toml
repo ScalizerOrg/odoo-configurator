@@ -26,6 +26,8 @@ dependencies = [
     "s6r-odoo",
     "psycopg",
     "pymssql",
+    "requests",
+    "unidecode"
 ]
 requires-python = ">=3.9"
 
