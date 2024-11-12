@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
  - Import module no longer auto-apply when initialized before scripts execution
+ - Added requests and unidecode dependencies that were missing
 
 ### Added
 
