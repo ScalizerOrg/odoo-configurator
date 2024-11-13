@@ -3,15 +3,17 @@
 
 import os
 import pickle
-import psycopg
-import pymssql
-import pyodbc
-from psycopg.rows import dict_row
-
 from .logging import get_logger
-
 logger = get_logger(__name__)
 
+try:
+    import psycopg
+    from psycopg.rows import dict_row
+    import pymssql
+    import pyodbc
+except Exception as err:
+    logger.error(err)
+    pass
 
 class SqlConnection:
     _name = "SQL"
