@@ -27,7 +27,8 @@ dependencies = [
     "psycopg",
     "pymssql",
     "requests",
-    "unidecode"
+    "unidecode",
+    "pyodbc"
 ]
 requires-python = ">=3.9"
 
