@@ -5,13 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.6.3] - 2024-11-13
+
 ### Fixed
 
  - Import module no longer auto-apply when initialized before scripts execution
  - Added requests and unidecode dependencies that were missing
 
 ### Added
-
+ - Allows to use MySQL connection in python script files
  - Added a new class for utility functions => utils.py
  - new method get_env_var() to get variable environment from yaml files
 
