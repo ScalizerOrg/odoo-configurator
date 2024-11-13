@@ -525,6 +525,7 @@ sql_auth:
 ### Available database types
  * Postgresql (postgresql)
  * MS SQL Server (mssql)
+ * MySQL (mysql)
 
 scripts/sql_transfer_script.py :
 
