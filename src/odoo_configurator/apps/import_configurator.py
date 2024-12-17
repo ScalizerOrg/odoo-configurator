@@ -67,14 +67,17 @@ class ImportConfigurator(base.OdooModule):
             domain = [('id', 'in', res_ids)]
         if not model:
             return '', []
-        records = self.search_read(model, domain, order=order_by, context=context)
+        if 'record_ids' in kwargs:
+            records = kwargs.get('record_ids')
+        else:
+            records = self.odoo.model(model).search(domain, order=order_by, context=context)
         if not records:
             self.logger.info("No records to import for %s" % model)
             return '', []
 
         res = ''
         prev_record_group = ''
-        model_id = self.search_read('ir.model', [('model', '=', model)], context=context)[0]
+        model_id = self.odoo.model('ir.model').search([('model', '=', model)], context=context)[0]
         self.load_model_fields(model)
         for i, record in enumerate(records):
             self.logger.info("Export %s : %s/%s", model, i, len(records))
@@ -94,12 +97,12 @@ class ImportConfigurator(base.OdooModule):
                 prev_record_group = record_group
 
             values = ""
-            rec_name = self.get_record_name(record, model)
+            rec_name = self.get_record_name(record._values, model)
             prefix = self.get_record_prefix(record)
             if prefix:
                 rec_name = '%s %s' % (prefix, rec_name)
 
-            xmlid = self.get_xmlid(model, record.get('id'))
+            xmlid = self.get_xmlid(model, record.id)
             if not xmlid:
                 xmlid = self.compute_xml_id(record, model)
             res += '\n%s%s:' % (" " * 4 * 2, rec_name)
@@ -257,36 +260,63 @@ class ImportConfigurator(base.OdooModule):
         for key in self._datas:
             if isinstance(self._datas.get(key), dict) or isinstance(self._datas.get(key), OrderedDict):
                 action_name = 'import_configurator_model_file'
-                configurator_model_files = self._datas.get(key).get(action_name, {})
-                if configurator_model_files:
+                if action_name in self._datas.get(key):
+                    configurator_model_files = self._datas.get(key).get(action_name, {})
+                    if configurator_model_files:
+                        self.logger.info("\t- %s : %s" % (key, action_name))
+                        self.import_configurator_model_file(configurator_model_files)
 
-                    self.logger.info("\t- %s : %s" % (key, action_name))
-                    for configurator_model_file in configurator_model_files:
-                        model_file = configurator_model_files[configurator_model_file]
-                        model = model_file.get('model')
-                        domain = model_file.get('domain')
-                        ids = model_file.get('ids')
-                        order_by = model_file.get('order_by')
-                        group_by = model_file.get('group_by')
-                        context = dict(model_file.get('context', {}))
-                        load = model_file.get('load')
-                        force_export_fields = model_file.get('force_export_fields', [])
-                        excluded_fields = model_file.get('excluded_fields', [])
-                        display_name_prefix_fields = model_file.get('display_name_prefix_fields', [])
-                        file_name = model.replace('.', '_')
-                        dest_path = os.path.dirname(self._configurator.paths[0]) + '/config'
-                        params = {'model': model,
-                                  'domain': domain,
-                                  'ids': ids,
-                                  'order_by': order_by,
-                                  'group_by': group_by,
-                                  'with_load': load,
-                                  'force_export_fields': force_export_fields,
-                                  'excluded_fields': excluded_fields,
-                                  'display_name_prefix_fields': display_name_prefix_fields,
-                                  'context': context}
-                        res, files = self.get_configurator_records(**params)
-                        open('%s/%s.yml' % (dest_path, file_name), 'w').write(res)
+                action_name = 'import_configurator_module'
+                if action_name in self._datas.get(key):
+                    module = self._datas.get(key).get(action_name).get('module', '')
+                    if module:
+                        self.logger.info("\t- %s : %s (%s)" % (key, action_name, module))
+                        self.import_configurator_module(module)
+
+    def import_configurator_module(self, module):
+        dest_path = os.path.join(os.path.dirname(self._configurator.paths[0]), 'config', module)
+        if not os.path.isdir(dest_path):
+            os.mkdir(dest_path)
+        data_ids = self.odoo.search_ir_model_data([('module', '=', module)])
+        if not data_ids:
+            return
+        models = data_ids.mapped('model')
+        for model in models:
+            model_data_ids = data_ids.filtered(model=model)
+            record_ids = self.odoo.model(model).read(model_data_ids.mapped('res_id'))
+            file_name = model.replace('.', '_')
+            params = {'model': model,
+                      'record_ids': record_ids}
+            res, files = self.get_configurator_records(**params)
+            open('%s/%s.yml' % (dest_path, file_name), 'w').write(res)
+
+    def import_configurator_model_file(self, configurator_model_files):
+        for configurator_model_file in configurator_model_files:
+            model_file = configurator_model_files[configurator_model_file]
+            model = model_file.get('model')
+            domain = model_file.get('domain')
+            ids = model_file.get('ids')
+            order_by = model_file.get('order_by')
+            group_by = model_file.get('group_by')
+            context = dict(model_file.get('context', {}))
+            load = model_file.get('load')
+            force_export_fields = model_file.get('force_export_fields', [])
+            excluded_fields = model_file.get('excluded_fields', [])
+            display_name_prefix_fields = model_file.get('display_name_prefix_fields', [])
+            file_name = model.replace('.', '_')
+            dest_path = os.path.dirname(self._configurator.paths[0]) + '/config'
+            params = {'model': model,
+                      'domain': domain,
+                      'ids': ids,
+                      'order_by': order_by,
+                      'group_by': group_by,
+                      'with_load': load,
+                      'force_export_fields': force_export_fields,
+                      'excluded_fields': excluded_fields,
+                      'display_name_prefix_fields': display_name_prefix_fields,
+                      'context': context}
+            res, files = self.get_configurator_records(**params)
+            open('%s/%s.yml' % (dest_path, file_name), 'w').write(res)
 
                 # ##############################
                 # #  CONFIGURATOR BINARY FILE  #

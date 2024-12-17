@@ -542,9 +542,9 @@ ImportManager.sql_transfer = sql_transfer
 ```
 
 
-## Generate YML data file from a model
+## Generate YML data file from a Odoo database
 
-This configuration will generate a res_partner.yml file in the **config** directory
+'import_configurator_model_file' configuration will generate a res_partner.yml file in the **config** directory
 ```yml
 Actions:
     import_configurator_model_file:
@@ -555,6 +555,13 @@ Actions:
             force_export_fields: ["email_formatted", "country_code"]
             excluded_fields: ["email", "country_id"]
             context: {'active_test': False}
+```
+
+'import_configurator_module' configuration will generate a 'studio_customization' directory in the **config** directory, with a file for each model containing the records of the module.
+```yml
+ Actions:           
+    import_configurator_module:
+        module: 'studio_customization'
 ```
 
 ## Release Configuration
