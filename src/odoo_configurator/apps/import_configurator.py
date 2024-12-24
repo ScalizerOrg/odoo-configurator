@@ -178,7 +178,7 @@ class ImportConfigurator(base.OdooModule):
 
         elif field_type in ['many2one']:
             if record[field_name]:
-                xmlid = self.get_xmlid(field['relation'], record[field_name][0])
+                xmlid = self.get_xmlid(field['relation'], record[field_name]['id'])
                 if xmlid:
                     name = "\n%s%s/id: %s" % (" " * 4 * 4, field_name, xmlid)
             else:
