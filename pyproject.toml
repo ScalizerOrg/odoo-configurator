@@ -1,5 +1,5 @@
 [build-system]
-requires      = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,7 +8,7 @@ version = "3.6.6"
 description = "Configure and update Odoo database with YAML files"
 readme = "README.md"
 authors = [{ name = "Michel Perrocheau", email = "myrrkel@gmail.com" },
-{ name = "David Halgand", email = "david@scalizer.fr" }]
+    { name = "David Halgand", email = "david@scalizer.fr" }]
 license = { file = "LICENSE" }
 classifiers = [
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
@@ -28,7 +28,8 @@ dependencies = [
     "pymssql",
     "requests",
     "unidecode",
-    "pyodbc"
+    "pyodbc",
+    "mysql-connector-python"
 ]
 requires-python = ">=3.9"
 
