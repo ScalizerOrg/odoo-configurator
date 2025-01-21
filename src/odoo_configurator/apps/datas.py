@@ -169,7 +169,7 @@ class OdooDatas(base.OdooModule):
             # prepare many2many list of xmlid
             keys = list(values.keys())
             for key in keys:
-                if isinstance(values[key], list) and '/id' in key:
+                if isinstance(values[key], list) and key.endswith('/id'):
                     if values[key] and isinstance(values[key][0], str) and '.' in values[key][0]:
                         if not force_id or isinstance(force_id, int):
                             field_name = key.replace('/id', '')
@@ -177,7 +177,15 @@ class OdooDatas(base.OdooModule):
                             values.pop(key)
                         else:
                             values[key] = ','.join(values[key])
-                elif isinstance(values[key], str) and '/id' in key:
+                elif values[key] and isinstance(values[key], str) and key.endswith('.ids'):
+                    field_name = key.replace('.ids', '')
+                    many2many_values = self.eval_param_value(values[key], force_safe_eval=True)
+                    try:
+                        self.execute_odoo(model, 'write', [object_ids, {field_name : many2many_values}])
+                    except Exception as err:
+                        self.logger.error(err, exc_info=True)
+                    values.pop(key)
+                elif isinstance(values[key], str) and key.endswith('/id'):
                     if values[key] and '.' in values[key]:
                         if not force_id or isinstance(force_id, int):
                             field_name = key.replace('/id', '')
@@ -256,10 +264,10 @@ class OdooDatas(base.OdooModule):
         res = self.execute_odoo('ir.actions.server', 'run', [action_server_id], {'context': context},
                                 no_raise=no_raise)
 
-    def eval_param_value(self, param):
+    def eval_param_value(self, param, force_safe_eval=False):
         if isinstance(param, str):
-            if param.startswith('get_'):
-                return self.safe_eval(param)
+            if param.startswith('get_') or force_safe_eval:
+                return self.safe_eval(param, force=force_safe_eval)
             if param[0] in ['[', '{', '(']:
                 param_val = literal_eval(param)
                 return param_val

@@ -247,9 +247,28 @@ Ir model Data Config:
 
 ## Special field name
 
-field_name_id/id : to provide a xmlid to many2one fields instead of a value, without using get_ref
-field_name_ids/id : to provide a list of xmlid to many2many fields
-field_name/json : to provide a list or dict to convert into json string
+field_name_id/id : to provide a xmlid to many2one fields instead of a value, without using get_ref.
+field_name_ids/id : to provide a list of xmlid to many2many fields.
+field_name_ids.ids : to provide a string that will be evaluated to compute the raw values for a many2many field.
+field_name/json : to provide a list or dict to convert into json string.
+
+```yml
+    res_partner:
+        datas:
+            My record 1:
+                model: res.partner
+                force_id: external_config.partner_1
+                values:
+                    name: Partner 1
+                    ref: PARTNER1
+                    field_name_id/id: external_config.partner_1
+                    field_name_ids/id: [external_config.partner_2, external_config.partner_3]
+                    field_name2_ids/id:
+                        - external_config.partner_2
+                        - external_config.partner_3
+                    field_name3_ids.ids: "[[6, 0, [o.get_ref('external_config.partner_2')]]]"
+                    field_name/json: {"key1": "value1", "key2": "value2"}
+```
 
 ## Server Actions and Functions
 
