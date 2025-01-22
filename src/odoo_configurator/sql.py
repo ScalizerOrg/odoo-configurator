@@ -3,7 +3,9 @@
 
 import os
 import pickle
+
 from .logging import get_logger
+
 logger = get_logger(__name__)
 
 try:
@@ -11,9 +13,11 @@ try:
     from psycopg.rows import dict_row
     import pymssql
     import pyodbc
+    import mysql.connector
 except Exception as err:
     logger.error(err)
     pass
+
 
 class SqlConnection:
     _name = "SQL"
@@ -36,12 +40,12 @@ class SqlConnection:
                 row_factory=dict_row
             )
         elif self.db_type == "mysql":
-            driver = 'Devart ODBC Driver for MySQL'
-            connectionString = f'DRIVER={driver};SERVER={url};DATABASE={dbname};UID={username};Encrypt=no;PWD={password}'
-            try:
-                self.connection = pyodbc.connect(connectionString)
-            except:
-                print("https://www.devart.com/odbc/mysql/download.html")
+            self.connection = mysql.connector.connect(
+                host=self.url,
+                user=self.username,
+                password=self.password,
+                database=self.dbname
+            )
         elif self.db_type == "mssql":
             driver = 'ODBC Driver 18 for SQL Server'
             connectionString = f'DRIVER={driver};SERVER={url};DATABASE={dbname};UID={username};Encrypt=no;PWD={password}'
@@ -63,10 +67,21 @@ class SqlConnection:
                 return results
         cursor = self.connection.cursor()
         cursor.execute(query)
+
         columns = [column[0] for column in cursor.description]
+        unique_columns = []
+        column_count = {}
+        for column in columns:
+            if column in column_count:
+                column_count[column] += 1
+                unique_columns.append(f"{column}_{column_count[column]}")
+            else:
+                column_count[column] = 0
+                unique_columns.append(column)
+
         results = []
         for row in cursor.fetchall():
-            results.append(dict(zip(columns, row)))
+            results.append(dict(zip(unique_columns, row)))
         cursor.close()
         if cache:
             with open(cache_filename, "wb") as outfile:
