@@ -80,7 +80,7 @@ class OdooModule:
             pass
         return to_ret
 
-    def safe_eval(self, name):
+    def safe_eval(self, name, force=False):
         for object_class, methods in self.get_mapping_method().items():
             if name.split('(')[0] in methods:
                 for o in self._published_objects():
@@ -90,6 +90,11 @@ class OdooModule:
                             return eval("o.%s" % name)
                         except Exception as err:
                             raise err
+            elif name.split('(')[0].split('.')[-1] in methods and force:
+                for o in self._published_objects():
+                    if o.__class__.__name__ == object_class:
+                        return eval(name)
+
         raise Exception("Cannot eval %s" % name)
 
     def pre_config(self, config, rec=0):
