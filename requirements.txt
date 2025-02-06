@@ -3,7 +3,7 @@ hiyapyco==0.5.1
 pykeepass==4.0.5
 cryptocode==0.1
 s6r_bitwarden_cli==1.0.7
-s6r-odoo>=2.0.2
+s6r-odoo>=2.0.4
 psycopg==3.2.2
 pymssql==2.3.1
 requests==2.32.3

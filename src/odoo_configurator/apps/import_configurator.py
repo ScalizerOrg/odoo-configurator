@@ -85,6 +85,8 @@ class ImportConfigurator(base.OdooModule):
             if group_by:
                 if isinstance(record[group_by], list):
                     group_by_name = record[group_by][1]
+                elif hasattr(record[group_by], 'name'):
+                    group_by_name = record[group_by].name
                 else:
                     group_by_name = record[group_by]
                 record_group = '%s - %s' % (group_by_name, record_group)
@@ -226,7 +228,7 @@ class ImportConfigurator(base.OdooModule):
             prefix = ''
             field_id = self.model_fields[field_name]['field']
             if field_id['ttype'] == 'many2one' and record[field_name]:
-                related_record = self.search_read(field_id['relation'], [('id', '=', record[field_name][0])])
+                related_record = self.search_read(field_id['relation'], [('id', '=', record[field_name].id)])
                 prefix = related_record and related_record[0]['name']
             elif field_id['ttype'] == 'many2many' and record[field_name]:
                 related_records = self.search_read(field_id['relation'], [('id', 'in', record[field_name])])
