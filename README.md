@@ -100,7 +100,7 @@ Use KEEPASS_PASSWORD instead of --keepass command line parameter
 
 ## Pre Update
 
-To prepare a configuration or add a fix use "pre_update", the given scripts will be executed before the normal configuration.
+To prepare a configuration or add a fix use "pre_update" from a top-level configuration, the given scripts will be executed before the normal configuration.
 
 ```yml
     pre_update:
