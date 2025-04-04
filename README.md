@@ -382,7 +382,7 @@ def import_stuff(self, params=dict):
     self.configurator.slack.send_message('Starting Stuff Import')
 ```
 
-Note: To use Slack notification, the `Odoo Configurator` Slapp app must be added in the channel.
+Note: To use Slack notification, the `Odoo Configurator` Slack app must be added in the channel.
 
 ## Keepass
 
