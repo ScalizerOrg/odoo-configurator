@@ -24,6 +24,7 @@ from .apps import translations
 from .apps import users
 from .apps import website
 from .apps import mattermost
+from .apps import slack
 from .apps import call
 from .apps import import_configurator
 
@@ -229,6 +230,8 @@ class Configurator:
         # logger.info(pformat(self.config))
 
     def start(self):
+        self.slack = slack.Slack(self)
+        self.slack.init_slack_client()
         translations.OdooTranslations(self)
         modules_manager = modules.OdooModules(self)
         modules_manager.pre_update_config_modules()
@@ -249,4 +252,7 @@ class Configurator:
         mattermost.Mattermost(self)
         call.OdooCalls(self)
         self.backup_release_directory()
+        if self.slack.slack_client:
+            message = ':large_green_circle: Odoo Configurator Done: %s' % self.config.get('name')
+            self.slack.send_message(message)
         return self.get_log()

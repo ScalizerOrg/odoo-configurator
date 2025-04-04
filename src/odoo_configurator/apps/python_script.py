@@ -9,6 +9,7 @@ from ..odoo_connection import get_file_full_path
 class PythonScript(imports.OdooImports):
     _name = "PythonScript"
     _key = "python_script"
+    auto_apply = False
 
     def get_func(self, data):
             file_path = data.get('file', False)
@@ -29,4 +30,7 @@ class PythonScript(imports.OdooImports):
                 return
             script_data = datas[script_section]
             func = self.get_func(script_data)
-            func(params=script_data.get('params', []))
+            params = script_data.get('params', {})
+            params['configurator'] = self._configurator
+            params['config'] = self._configurator.config
+            func(params=params)

@@ -351,18 +351,38 @@ Example:
                         </table>
 ```
 
+## Notifications
+
+To avoid notifications, add in main yaml file:
+```yml
+    no_notification: True
+```
+
 ## Mattermost Notification
 
 To set a Mattermost url and channel where to send notifications:
 ```yml
     mattermost_channel: my-channel
-    mattermost_url: https://mattermost.xxx.com/hooks/dfh654fgh
+    slack_token: https://mattermost.xxx.com/hooks/dfh654fgh
 ```
 
-To avoid Mattermost notification, add in main yaml file:
+## Slack Notification
+
+To send notifications with Slack:
 ```yml
-    no_notification: True
+    slack_channel: my-channel
+    slack_token: xxxxx
 ```
+
+To send notifications from a python script:
+```python
+from odoo_configurator.import_manager import ImportManager
+def import_stuff(self, params=dict):
+    self.set_params(params)
+    self.configurator.slack.send_message('Starting Stuff Import')
+```
+
+Note: To use Slack notification, the `Odoo Configurator` Slapp app must be added in the channel.
 
 ## Keepass
 

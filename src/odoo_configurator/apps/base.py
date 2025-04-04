@@ -18,6 +18,7 @@ class OdooModule:
 
     def __init__(self, configurator):
         self._configurator = configurator
+        self.config = self._configurator.config
         self._connection = configurator.connection
         self._utils = configurator.utils
         self._keepass_cli = configurator.keepass_cli

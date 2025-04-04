@@ -14,8 +14,11 @@ from .odoo_connection import get_file_full_path
 
 
 class ImportManager:
+    configurator = None
+    config = None
 
     def __init__(self, configurator):
+
         self.logger = get_logger("Imports ".ljust(15))
         self._connection = configurator.connection
         self.odoo = self._connection.odoo
@@ -202,6 +205,8 @@ class ImportManager:
         self.skip_line = params.get('skip_line', 0)
         self.batch_size = params.get('batch_size', 1000)
         self.ignore_errors = params.get('ignore_errors', [])
+        self.configurator = params.get('configurator', None)
+        self.config = params.get('config', None)
 
         self._context = self._context_base.copy()
         if self.name_create_enabled_fields:
