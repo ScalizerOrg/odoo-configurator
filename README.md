@@ -363,7 +363,7 @@ To avoid notifications, add in main yaml file:
 To set a Mattermost url and channel where to send notifications:
 ```yml
     mattermost_channel: my-channel
-    slack_token: https://mattermost.xxx.com/hooks/dfh654fgh
+    mattermost_url: https://mattermost.xxx.com/hooks/dfh654fgh
 ```
 
 ## Slack Notification
