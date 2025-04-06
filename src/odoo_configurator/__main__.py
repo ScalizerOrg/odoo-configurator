@@ -7,16 +7,15 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser(description='Odoo Configurator')
-    parser.add_argument('files', metavar='files', type=open, nargs='+', help='Config Files To load')
+    parser.add_argument('paths', metavar='files', type=open, nargs='+', help='Config Files To load')
     parser.add_argument('--update', action='store_true', help='Update Mode')
     parser.add_argument('--install', action='store_true', help='Install Mode')
     parser.add_argument('--debug', action='store_true', help='Debug log')
     parser.add_argument('--debug_xmlrpc', action='store_true', help='Debug log xmlrpc')
     parser.add_argument('--keepass', type=str, help='Keepass password')
+    parser.add_argument('--slack-token', type=str, help='Slack token')
     args = parser.parse_args()
-
-    c = Configurator([i.name for i in args.files], install=args.install, update=args.update, debug=args.debug,
-                     debug_xmlrpc=args.debug_xmlrpc, keepass=args.keepass)
+    c = Configurator(**dict(args._get_kwargs()))
     c.show()
     log = c.start()
 

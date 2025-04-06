@@ -2,7 +2,7 @@
 # Copyright 2024 Scalizer (<https://www.scalizer.fr>)
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html).
 
-from datetime import date
+from datetime import date, datetime
 import glob
 import logging
 import os.path
@@ -57,26 +57,43 @@ class Configurator:
     release_directory = ''
     clear_release_directory = False
     paths = list()
+    slack_token = ''
+    start_time = datetime.now()
 
-    def __init__(self, paths=False, install=False, update=False, debug=False, debug_xmlrpc=False, keepass='',
-                 config_dict=None):
+    def __init__(self, paths=None, install=False, update=False, debug=False, debug_xmlrpc=False, **kwargs):
+        """
+        paths (list): List of file paths to load configuration from.
+        install (bool): Whether to install mode is enabled.
+        update (bool): Whether to update mode is enabled.
+        debug (bool): Whether to enable debug logging.
+        debug_xmlrpc (bool): Whether to enable debug logging for XML-RPC.
+        **kwargs: Additional keyword arguments:
+            - keepass (str): Keepass password.
+            - slack_token (str): Slack token.
+            - config_dict (dict): Dictionary containing configuration data.
+        """
+        if paths is None:
+            paths = []
         self.configurator_dir = os.path.dirname(sys.argv[0])
+        paths = [i.name if hasattr(i, 'name') else i for i in paths]
         if install:
             self.mode.append('install')
         if update:
             self.mode.append('update')
+
+        self.slack_token = kwargs.get('slack_token', '')
         self.debug = debug
         self.debug_xmlrpc = debug_xmlrpc
         if paths:
             self.paths = paths
             self.config, self.pre_update_config = self.parse_config()
         else:
-            self.config = config_dict
+            self.config = kwargs.get('config_dict', {})
         self.log_history = []
         logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
         self.utils = Utils(self)
-        self.keepass_cli = KeepassCli(self, keepass_password=keepass)
+        self.keepass_cli = KeepassCli(self, keepass_password=kwargs.get('keepass', ''))
         self.bitwarden_cli = Bitwarden(self)
         self.prepare_odoo_connection()
         self.import_manager = ImportManager(self)
@@ -230,6 +247,7 @@ class Configurator:
         # logger.info(pformat(self.config))
 
     def start(self):
+        self.start_time = datetime.now()
         self.slack = slack.Slack(self)
         self.slack.init_slack_client()
         translations.OdooTranslations(self)
@@ -252,7 +270,12 @@ class Configurator:
         mattermost.Mattermost(self)
         call.OdooCalls(self)
         self.backup_release_directory()
+
+        duration = datetime.now() - self.start_time
+        minutes = round(duration.total_seconds() / 60, 2) if duration else 0
+        message = '%s updated in %s minutes' % (self.config.get('name'), minutes)
         if self.slack.slack_client:
-            message = ':large_green_circle: Odoo Configurator Done: %s' % self.config.get('name')
-            self.slack.send_message(message)
+            self.slack.send_message(message, message_type='valid', title='Odoo Configurator Done')
+        logger.info(message)
+
         return self.get_log()

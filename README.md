@@ -374,6 +374,8 @@ To send notifications with Slack:
     slack_token: xxxxx
 ```
 
+The Slack token can also be set by passing it as an argument with the `--slack-token` option.
+
 To send notifications from a python script:
 ```python
 from odoo_configurator.import_manager import ImportManager
