@@ -1,8 +1,20 @@
 # Copyright (C) 2023 - Teclib'ERP (<https://www.teclib-erp.com>).
+# Copyright (C) 2025 - Scalizer (<https://www.scalizer.fr>).
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html).
 
 from .configurator import Configurator
 import argparse
+
+import importlib.metadata
+import pathlib
+import toml
+
+source_location = pathlib.Path(__file__).parent.parent
+if (source_location.parent / "pyproject.toml").exists():
+    with open(source_location.parent / "pyproject.toml", "rt") as f:
+        __version__ = toml.load(f)['project']['version']
+else:
+    __version__ = importlib.metadata.version("odoo-configurator")
 
 
 def main():
@@ -15,7 +27,7 @@ def main():
     parser.add_argument('--keepass', type=str, help='Keepass password')
     parser.add_argument('--slack-token', type=str, help='Slack token')
     args = parser.parse_args()
-    c = Configurator(**dict(args._get_kwargs()))
+    c = Configurator(**dict(args._get_kwargs()), version=__version__)
     c.show()
     log = c.start()
 

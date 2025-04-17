@@ -5,6 +5,7 @@
 from datetime import date, datetime
 import glob
 import logging
+from packaging.version import Version
 import os.path
 import sys
 
@@ -59,6 +60,7 @@ class Configurator:
     paths = list()
     slack_token = ''
     start_time = datetime.now()
+    version = ''
 
     def __init__(self, paths=None, install=False, update=False, debug=False, debug_xmlrpc=False, **kwargs):
         """
@@ -80,6 +82,8 @@ class Configurator:
             self.mode.append('install')
         if update:
             self.mode.append('update')
+
+        self.version = kwargs.get('version', '')
 
         self.slack_token = os.environ.get('SLACK_TOKEN') or kwargs.get('slack_token', '')
         self.debug = debug
@@ -154,6 +158,14 @@ class Configurator:
             parsed_config = get_config_from_files(config_files)
         if parsed_config.get('clear_release_directory'):
             self.clear_release_directory = parsed_config.get('clear_release_directory')
+
+        if parsed_config.get('configurator_version'):
+            version = parsed_config['configurator_version']
+            version = str(version) if not isinstance(version, str) else version
+            if Version(version) > Version(self.version):
+                msg = "The yml configuration requires Odoo Configurator version >= %s (Current version==%s)"
+                logger.error(msg % (version, self.version))
+                exit(1)
 
         self.parse_scripts(parsed_config)
 
