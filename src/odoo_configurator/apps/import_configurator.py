@@ -306,7 +306,8 @@ class ImportConfigurator(base.OdooModule):
             excluded_fields = model_file.get('excluded_fields', [])
             display_name_prefix_fields = model_file.get('display_name_prefix_fields', [])
             file_name = model.replace('.', '_')
-            dest_path = os.path.dirname(self._configurator.paths[0]) + '/config'
+            dest_path = model_file.get('dest_path', '')
+            dest_path = '%s/%s' % (os.path.dirname(self._configurator.paths[0]), dest_path or 'config')
             params = {'model': model,
                       'domain': domain,
                       'ids': ids,
