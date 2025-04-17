@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [3.7.0] - 2025-04-17
+
+### Added
+
+ - Add `SLACK_TOKEN` environment variable
+ - Add `dest_path` parameter for imports
+ - Add `configurator_version` parameter to define Odoo Configurator version in yml file
+
+## Fixed
+
+ - Improve slow datas updates with load parameter
+
 ## [3.6.10] - 2025-04-06
 
 ### Added
