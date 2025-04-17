@@ -38,7 +38,7 @@ class OdooDatas(base.OdooModule):
                 data = values.get('datas', {})
                 if data:
                     self.logger.info("\tDatas - %s" % key)
-                    self.odoo_datas(data)
+                    self.odoo_datas(data, load=datas[key].get('load', False))
 
         scripts = datas.get('scripts', [])
         odoo_config = OdooConfig(self._configurator, auto_apply=False)
@@ -67,12 +67,12 @@ class OdooDatas(base.OdooModule):
             self.pre_config(config)
             self._connection.execute_config(config)
 
-    def odoo_datas(self, datas):
+    def odoo_datas(self, datas, load=False):
         self.pre_config(datas)
-        raw_load_values = []
-        load_fields = []
-        load = datas.pop('load', False)
+        load = load or datas.pop('load', False)
         model = datas.pop('model', False)
+        load_fields = []
+        raw_load_values = []
         for data in datas:
             object_ids = False
             self.logger.info("\t\t* %s" % data)
@@ -176,7 +176,10 @@ class OdooDatas(base.OdooModule):
                             values[field_name] = [self.get_ref(v) for v in values[key]]
                             values.pop(key)
                         else:
-                            values[key] = ','.join(values[key])
+                            field_name = key.replace('/id', '.id')
+                            values[field_name] = ','.join([str(self.get_ref(v)) for v in values[key]])
+                            values.pop(key)
+
                 elif values[key] and isinstance(values[key], str) and key.endswith('.ids'):
                     field_name = key.replace('.ids', '')
                     many2many_values = self.eval_param_value(values[key], force_safe_eval=True)
@@ -196,8 +199,6 @@ class OdooDatas(base.OdooModule):
                     values[field_name] = str(json.dumps(values[key]))
                     values.pop(key)
 
-            load_fields = []
-            raw_load_values = []
             if load:
                 fields, rec_values = self.save_values(model, values, config_context, force_id, object_ids,
                                                       load_batch=load)
