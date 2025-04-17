@@ -81,7 +81,7 @@ class Configurator:
         if update:
             self.mode.append('update')
 
-        self.slack_token = kwargs.get('slack_token', '')
+        self.slack_token = os.environ.get('SLACK_TOKEN') or kwargs.get('slack_token', '')
         self.debug = debug
         self.debug_xmlrpc = debug_xmlrpc
         if paths:
