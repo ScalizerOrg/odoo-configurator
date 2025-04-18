@@ -6,7 +6,7 @@ from s6r_odoo import OdooConnection as Orm
 from collections import OrderedDict
 import importlib.util as ilu
 from . import base
-from ..odoo_connection import get_file_full_path
+from ..utils import Utils as utils
 from ..sql import SqlConnection
 
 
@@ -26,7 +26,7 @@ class OdooImports(base.OdooModule):
             else:
                 self.logger.info("Specific import %s %s" % (data.get('specific_import', False),
                                                             data.get('specific_method', False)))
-            path = get_file_full_path(data.get('specific_import'))
+            path = utils.get_file_full_path(data.get('specific_import'))
             spec = ilu.spec_from_file_location('import_specific', path)
             specific_lib = ilu.module_from_spec(spec)
             spec.loader.exec_module(specific_lib)
@@ -51,7 +51,7 @@ class OdooImports(base.OdooModule):
                 return
             import_data = import_datas[import_name]
             func = self.get_func(import_data)
-            func(get_file_full_path(import_data.get('file_path', '')),
+            func(utils.get_file_full_path(import_data.get('file_path', '')),
                  import_data.get('model', ''), params=import_data)
         for key in script_datas:
             if isinstance(script_datas.get(key), dict) or isinstance(script_datas.get(key), OrderedDict):
@@ -61,7 +61,7 @@ class OdooImports(base.OdooModule):
                         self.logger.info("\t\t* skipped not install mode")
                         return
                     func = self.get_func(import_data)
-                    func(get_file_full_path(import_data.get('file_path', '')),
+                    func(utils.get_file_full_path(import_data.get('file_path', '')),
                          import_data.get('model', ''), params=import_data)
 
     def prepare_extra_odoo_connections(self):

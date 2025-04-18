@@ -10,8 +10,6 @@ from datetime import datetime
 import unidecode
 import re
 from pprint import pformat
-from .odoo_connection import get_file_full_path
-
 
 class ImportManager:
     configurator = None
@@ -25,6 +23,7 @@ class ImportManager:
         self._context_base = self._connection.context.copy()
         self._context_base.update({'tracking_disable': True, '__import__': True})
         self._context = self._context_base
+        self.utils = configurator.utils
 
         self.name_create_enabled_fields = ''
         self.context = False
@@ -116,7 +115,7 @@ class ImportManager:
 
     def parse_csv_file_dictreader(self, file_path, fields, delimiter=","):
         vals = []
-        file_path = get_file_full_path(file_path)
+        file_path = self.utils.get_file_full_path(file_path)
         with open(file_path, 'r') as csvfile:
             reader = csv.DictReader(csvfile, skipinitialspace=True, delimiter=delimiter, quotechar='"')
             for i in range(self.skip_line):

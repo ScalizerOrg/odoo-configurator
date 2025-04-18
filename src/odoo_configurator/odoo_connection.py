@@ -13,6 +13,7 @@ import xmlrpc.client
 from pprint import pformat
 from .logging import get_logger
 from s6r_odoo import OdooConnection as Orm
+from .utils import Utils as utils
 
 import requests
 from bs4 import BeautifulSoup
@@ -22,32 +23,6 @@ CACHE = "/tmp/.configurator_cache"
 METHODE_MAPPING = {
     15: [('get_object_reference', 'check_object_reference')]
 }
-
-
-def get_file_full_path(path):
-    if not path:
-        return ''
-    param_path = path
-    if not os.path.isfile(path):
-        path = os.path.join(os.path.dirname(sys.argv[1]), param_path)
-    if not os.path.isfile(path):
-        path = os.path.join(os.path.dirname(sys.argv[1]), 'datas', param_path)
-    if not os.path.isfile(path):
-        raise FileNotFoundError('%s not found!' % param_path)
-    return path
-
-
-def get_dir_full_path(path):
-    if not path:
-        return ''
-    param_path = path
-    if not os.path.isdir(path):
-        path = os.path.join(os.path.dirname(sys.argv[1]), param_path)
-    if not os.path.isdir(path):
-        path = os.path.join(os.path.dirname(sys.argv[1]), 'datas', param_path)
-    if not os.path.isdir(path):
-        raise NotADirectoryError('%s not found!' % param_path)
-    return path
 
 
 class OdooConnection:
@@ -203,12 +178,12 @@ class OdooConnection:
         return self._cache['image_url'][url]
 
     def get_image_local(self, path):
-        path = get_file_full_path(path)
+        path = utils.get_file_full_path(path)
         return base64.b64encode(open(path, "rb").read()).decode("utf-8", "ignore")
 
     @staticmethod
     def get_local_file(path, encode=False):
-        path = get_file_full_path(path)
+        path = utils.get_file_full_path(path)
         if encode:
             with open(path, "rb") as f:
                 res = f.read()
