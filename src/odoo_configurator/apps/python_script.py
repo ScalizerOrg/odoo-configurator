@@ -3,7 +3,7 @@
 
 import importlib.util as ilu
 from . import imports
-from ..odoo_connection import get_file_full_path
+from ..utils import Utils as utils
 
 
 class PythonScript(imports.OdooImports):
@@ -15,7 +15,7 @@ class PythonScript(imports.OdooImports):
             file_path = data.get('file', False)
             method_name = data.get('method', False)
             self.logger.info("Python Script %s %s" % (file_path, method_name))
-            path = get_file_full_path(data.get('file'))
+            path = utils.get_file_full_path(data.get('file'))
             spec = ilu.spec_from_file_location('import_specific', path)
             specific_lib = ilu.module_from_spec(spec)
             spec.loader.exec_module(specific_lib)

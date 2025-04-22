@@ -29,7 +29,8 @@ dependencies = [
     "requests",
     "unidecode",
     "pyodbc",
-    "mysql-connector-python"
+    "mysql-connector-python",
+    "slack_sdk"
 ]
 requires-python = ">=3.9"
 

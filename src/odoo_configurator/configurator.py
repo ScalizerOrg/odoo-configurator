@@ -32,7 +32,6 @@ from .apps import import_configurator
 from .import_manager import ImportManager
 from .logging import get_logger
 from .odoo_connection import OdooConnection
-from .odoo_connection import get_dir_full_path
 from .keepass import KeepassCli
 from .bitwarden import Bitwarden
 from .utils import Utils
@@ -199,7 +198,7 @@ class Configurator:
         return files
 
     def backup_release_directory(self):
-        release_directory = get_dir_full_path(self.release_directory)
+        release_directory = self.utils.get_dir_full_path(self.release_directory)
         if self.clear_release_directory and os.path.isdir(release_directory):
             bak_dir = os.path.join(release_directory, 'bak')
             if not os.path.isdir(bak_dir):
