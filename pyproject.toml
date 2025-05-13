@@ -30,7 +30,9 @@ dependencies = [
     "unidecode",
     "pyodbc",
     "mysql-connector-python",
-    "slack_sdk"
+    "slack_sdk",
+    "toml",
+    "packaging",
 ]
 requires-python = ">=3.9"
 
