@@ -112,7 +112,7 @@ class ImportConfigurator(base.OdooModule):
             res += '\n%s%s: %s' % (" " * 4 * 3, 'force_id', xmlid)
             res += '\n%s%s:' % (" " * 4 * 3, 'values')
 
-            field_names = sort_fields(self.model_fields.keys())
+            field_names = sort_fields(kwargs.get('fields', [])) or sort_fields(self.model_fields.keys())
             for key in field_names:
                 field = self.model_fields[key]['field']
 
@@ -304,6 +304,7 @@ class ImportConfigurator(base.OdooModule):
             load = model_file.get('load')
             force_export_fields = model_file.get('force_export_fields', [])
             excluded_fields = model_file.get('excluded_fields', [])
+            fields = model_file.get('fields', [])
             display_name_prefix_fields = model_file.get('display_name_prefix_fields', [])
             file_name = model.replace('.', '_')
             dest_path = model_file.get('dest_path', '')
@@ -315,6 +316,7 @@ class ImportConfigurator(base.OdooModule):
                       'group_by': group_by,
                       'with_load': load,
                       'force_export_fields': force_export_fields,
+                      'fields': fields,
                       'excluded_fields': excluded_fields,
                       'display_name_prefix_fields': display_name_prefix_fields,
                       'context': context}
