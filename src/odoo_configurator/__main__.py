@@ -25,6 +25,7 @@ def main():
     parser.add_argument('--debug', action='store_true', help='Debug log')
     parser.add_argument('--debug_xmlrpc', action='store_true', help='Debug log xmlrpc')
     parser.add_argument('--keepass', type=str, help='Keepass password')
+    parser.add_argument('--lang', type=str, help='Language code (e.g. fr_FR) to be used in context for all API calls')
     parser.add_argument('--slack-token', type=str, help='Slack token')
     args = parser.parse_args()
     c = Configurator(**dict(args._get_kwargs()), version=__version__)

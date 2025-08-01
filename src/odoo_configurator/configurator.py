@@ -85,6 +85,7 @@ class Configurator:
         self.version = kwargs.get('version', '')
 
         self.slack_token = os.environ.get('SLACK_TOKEN') or kwargs.get('slack_token', '')
+        self.lang = kwargs.get('lang', 'fr_FR')
         self.debug = debug
         self.debug_xmlrpc = debug_xmlrpc
         if paths:
@@ -114,7 +115,8 @@ class Configurator:
             http_password=odoo_params.get('http_password'),
             createdb=odoo_params.get('create_db'),
             debug_xmlrpc=self.debug_xmlrpc,
-            configurator=self
+            lang=self.lang,
+            configurator=self,
         )
 
     def get_odoo_auth_params(self):

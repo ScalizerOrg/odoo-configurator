@@ -61,7 +61,9 @@ It's also possible to provide auth for other odoo servers, these connections can
         password: admin
         version: 17.0
 ```
-
+### Extra parameters
+When running odoo-configurator, you can provide the following optional arguments:
+- --lang: Set the language for the Odoo connection (default value: 'fr_FR')
 
 ## Inherits
 
