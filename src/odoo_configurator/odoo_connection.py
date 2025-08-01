@@ -26,11 +26,10 @@ METHODE_MAPPING = {
 
 
 class OdooConnection:
-    _context = {'lang': 'fr_FR', 'noupdate': True}
     _cache = {}
 
     def __init__(self, url, dbname, user, password, version=False, http_user=None, http_password=None, createdb=False,
-                 debug_xmlrpc=False, configurator=None):
+                 debug_xmlrpc=False, configurator=None, **kwargs):
         self.logger = get_logger("Odoo Connection".ljust(15))
         if debug_xmlrpc:
             self.logger.setLevel(logging.DEBUG)
@@ -44,13 +43,14 @@ class OdooConnection:
         self._http_password = http_password
         self._version = version
         self._configurator = configurator
+        self._context = {'lang': kwargs.get('lang') or 'fr_FR', 'noupdate': True}
         self.xmlid_cache = configurator.xmlid_cache if configurator else {}
         # noinspection PyProtectedMember,PyUnresolvedReferences
         self._insecure_context = ssl._create_unverified_context()
         self._load_cache()
         self._compute_url()
         try:
-            self.odoo = Orm(self._url, self._dbname, self._user, self._password, debug_xmlrpc=debug_xmlrpc)
+            self.odoo = Orm(self._url, self._dbname, self._user, self._password, debug_xmlrpc=debug_xmlrpc, lang=kwargs.get('lang','fr_FR'))
         except ConnectionError:
             exit(1)
         except xmlrpc.client.Fault as err:
