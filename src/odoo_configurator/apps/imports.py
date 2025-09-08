@@ -76,6 +76,7 @@ class OdooImports(base.OdooModule):
                                                auth_values['username'],
                                                auth_values['password'],
                                                version=auth_values.get('version', False),
+                                               lang=auth_values.get('lang', 'fr_FR'),
                                                ))
                     except ConnectionError:
                         exit(1)
