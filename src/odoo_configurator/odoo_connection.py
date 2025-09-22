@@ -140,6 +140,11 @@ class OdooConnection:
         except Exception as e:
             if no_raise:
                 return
+            if args[1] == 'search' and 'BaseModel.search() takes from 2 to 5 positional arguments' in str(e):
+                self.logger.error(e.faultString)
+                self.logger.error('Consider to add the version parameter in configuration')
+                exit(1)
+
             if retry <= 3:
                 return self.execute_odoo(*args, retry=retry+1)
             else:

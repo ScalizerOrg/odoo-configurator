@@ -171,7 +171,7 @@ class ImportConfigurator(base.OdooModule):
             name = "\n%s%s: %s" % (" " * 4 * 4, field_name, 'get_image_local("%s")' % file_name)
         elif field_type == 'many2many':
             rec_values = ''
-            xmlid_list = [self.get_xmlid(field['relation'], val) for val in record[field_name]]
+            xmlid_list = [self.get_xmlid(field['relation'], val) for val in record[field_name].ids]
             for xmlid in xmlid_list:
                 if xmlid:
                     rec_values += '\n%s- %s' % (" " * (2 + 4 * 4), xmlid)
