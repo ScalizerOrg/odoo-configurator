@@ -51,7 +51,8 @@ class OdooConnection:
         self._compute_url()
         try:
             self.odoo = Orm(self._url, self._dbname, self._user, self._password, debug_xmlrpc=debug_xmlrpc, lang=kwargs.get('lang','fr_FR'))
-        except ConnectionError:
+        except ConnectionError as err:
+            self.logger.error(err)
             exit(1)
         except xmlrpc.client.Fault as err:
             self.logger.error(err.faultString)

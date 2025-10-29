@@ -17,8 +17,11 @@ from .system_parameter import OdooSystemParameter
 def prepare_load_values(load_fields, fields, values):
     load_values = []
     for load_field in load_fields:
+        field_name = load_field.split('.')[0].split('/')[0]
         if load_field in fields:
             value = values[fields.index(load_field)]
+        elif field_name in fields:
+            value = values[fields.index(field_name)]
         else:
             value = False
         load_values.append(value)
@@ -168,7 +171,7 @@ class OdooDatas(base.OdooModule):
             else:
                 self.logger.error("key=%s", field_key)
                 raise
-
+            use_create_write = not force_id or isinstance(force_id, int)
             # prepare many2many list of xmlid
             keys = list(values.keys())
             for key in keys:
@@ -192,11 +195,19 @@ class OdooDatas(base.OdooModule):
                         self.logger.error(err, exc_info=True)
                     values.pop(key)
                 elif isinstance(values[key], str) and key.endswith('/id'):
-                    if values[key] and '.' in values[key]:
-                        if not force_id or isinstance(force_id, int):
+                    value = values[key]
+                    if value and '.' in value:
+                        if object_ids and not load and use_create_write:
                             field_name = key.replace('/id', '')
-                            values[field_name] = self.get_ref(values[key])
-                            values.pop(key)
+                        else:
+                            field_name = key.replace('/id', '.id')
+                        values[field_name] = int(self.get_ref(value))
+                        values.pop(key)
+                elif key.endswith('.id') and use_create_write:
+                    value = values[key]
+                    field_name = key.replace('.id', '')
+                    values[field_name] = value
+                    values.pop(key)
                 elif not isinstance(values[key], str) and key.endswith('/json'):
                     field_name = key.replace('/json', '')
                     values[field_name] = str(json.dumps(values[key]))

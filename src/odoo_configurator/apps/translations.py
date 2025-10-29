@@ -12,9 +12,13 @@ class OdooTranslations(base.OdooModule):
     def apply(self):
         super(OdooTranslations, self).apply()
         self._context['active_test'] = False
-        translations = self._datas.get(self._key, {})
+        translations = self._datas.get(self._key, [])
+        if not translations:
+            return
         installed_translations = []
-        odoo_lang = self.execute_odoo('res.lang', 'search_read', [[('code', 'in', translations)], ['id', 'code', 'active']],
+        odoo_lang = self.execute_odoo('res.lang', 'search_read',
+                                      [[('code', 'in', translations)],
+                                       ['id', 'code', 'active']],
                                       {'context': self._context})
         for lang_code in translations:
             for lang in odoo_lang:

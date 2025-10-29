@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - create_xmlid option in import_configurator_model_file
+- Allows to use many2one fields with /id suffix in write/create mode
 
 ## [3.7.5] - 2025-09-22
 
