@@ -67,6 +67,10 @@ class ImportConfigurator(base.OdooModule):
             domain = [('id', 'in', res_ids)]
         if not model:
             return '', []
+        if 'create_xmlid' in kwargs:
+            create_xmlid = kwargs.get('create_xmlid')
+        else:
+            create_xmlid = True
         if 'record_ids' in kwargs:
             records = kwargs.get('record_ids')
         else:
@@ -80,7 +84,7 @@ class ImportConfigurator(base.OdooModule):
         model_id = self.odoo.model('ir.model').search([('model', '=', model)], context=context)[0]
         self.load_model_fields(model)
         for i, record in enumerate(records):
-            self.logger.info("Export %s : %s/%s", model, i, len(records))
+            self.logger.info("Export %s : %s/%s", model, i+1, len(records))
             record_group = model_id['name'].title().replace(':', '')
             if group_by:
                 if isinstance(record[group_by], list):
@@ -103,10 +107,11 @@ class ImportConfigurator(base.OdooModule):
             prefix = self.get_record_prefix(record)
             if prefix:
                 rec_name = '%s %s' % (prefix, rec_name)
+            rec_name = rec_name.replace(':', ' ').replace('#', ' ').strip()
 
             xmlid = self.get_xmlid(model, record.id)
             if not xmlid:
-                xmlid = self.compute_xml_id(record, model)
+                xmlid = self.compute_xml_id(record, model, create_xmlid=create_xmlid)
             res += '\n%s%s:' % (" " * 4 * 2, rec_name)
             res += '\n%s%s: %s' % (" " * 4 * 3, 'model', model)
             res += '\n%s%s: %s' % (" " * 4 * 3, 'force_id', xmlid)
@@ -247,11 +252,12 @@ class ImportConfigurator(base.OdooModule):
         self.rec_to_xmlid_cache[(model, res_id)] = xmlid
         return xmlid
 
-    def compute_xml_id(self, record, model, retry=0):
+    def compute_xml_id(self, record, model, retry=0, create_xmlid=False):
         name = '%s_%s' % (model.replace('.', '_'), str(record['id']+retry).zfill(5))
         xml_id = 'external_config.%s' % name
         if not self.get_id_from_xml_id(xml_id, no_raise=True):
-            self.create_xml_id('external_config', model, name, record['id'])
+            if create_xmlid:
+                self.create_xml_id('external_config', model, name, record['id'])
             return xml_id
         else:
             retry += 1
@@ -304,6 +310,7 @@ class ImportConfigurator(base.OdooModule):
             load = model_file.get('load')
             force_export_fields = model_file.get('force_export_fields', [])
             excluded_fields = model_file.get('excluded_fields', [])
+            create_xmlid = model_file.get('create_xmlid', True)
             fields = model_file.get('fields', [])
             display_name_prefix_fields = model_file.get('display_name_prefix_fields', [])
             file_name = model.replace('.', '_')
@@ -319,6 +326,7 @@ class ImportConfigurator(base.OdooModule):
                       'fields': fields,
                       'excluded_fields': excluded_fields,
                       'display_name_prefix_fields': display_name_prefix_fields,
+                      'create_xmlid': create_xmlid,
                       'context': context}
             res, files = self.get_configurator_records(**params)
             open('%s/%s.yml' % (dest_path, file_name), 'w').write(res)
