@@ -81,7 +81,9 @@ class ImportConfigurator(base.OdooModule):
 
         res = ''
         prev_record_group = ''
-        model_id = self.odoo.model('ir.model').search([('model', '=', model)], context=context)[0]
+        model_id = self.odoo.model('ir.model').search([('model', '=', model)],
+                                                      fields=['name'],
+                                                      context=context)[0]
         self.load_model_fields(model)
         for i, record in enumerate(records):
             self.logger.info("Export %s : %s/%s", model, i+1, len(records))
@@ -181,7 +183,7 @@ class ImportConfigurator(base.OdooModule):
                 if xmlid:
                     rec_values += '\n%s- %s' % (" " * (2 + 4 * 4), xmlid)
             if rec_values:
-                name = '\n%s%s/id: %s' % (" " * 4 * 4, field_name, rec_values)
+                name = '\n%s%s/id:%s' % (" " * 4 * 4, field_name, rec_values)
 
         elif field_type in ['many2one']:
             if record[field_name]:
@@ -236,7 +238,7 @@ class ImportConfigurator(base.OdooModule):
                 related_record = self.search_read(field_id['relation'], [('id', '=', record[field_name].id)])
                 prefix = related_record and related_record[0]['name']
             elif field_id['ttype'] == 'many2many' and record[field_name]:
-                related_records = self.search_read(field_id['relation'], [('id', 'in', record[field_name])])
+                related_records = self.search_read(field_id['relation'], [('id', 'in', record[field_name].ids)])
                 if related_records:
                     prefix = ' '.join([related_record['name'] for related_record in related_records])
             else:
