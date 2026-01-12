@@ -6,7 +6,7 @@ import csv
 import os
 import sys
 from .logging import get_logger
-from datetime import datetime
+from datetime import datetime, timedelta
 import unidecode
 import re
 from pprint import pformat
@@ -181,8 +181,14 @@ class ImportManager:
                 else:
                     self.logger.info(message)
             stop_batch = datetime.now()
-            self.logger.info("\t\t\tBatch time %s ( %sms per object)" % (
-                stop_batch - start_batch, ((stop_batch - start_batch) / len(load_data)).microseconds / 1000))
+            batch_delta = stop_batch - start_batch
+            batch_delta_per_object = batch_delta/len(load_data)
+            display_delta = batch_delta_per_object.microseconds/1000
+            display_unit = 'ms'
+            if batch_delta_per_object > timedelta(seconds=1):
+                display_delta = batch_delta_per_object.total_seconds()
+                display_unit = 's'
+            self.logger.info(f"\t\t\tBatch time {batch_delta} ({display_delta:.3f}{display_unit} per object)")
 
         stop = datetime.now()
         self.logger.info("\t\t\tTotal time %s" % (stop - start))
@@ -219,6 +225,12 @@ class ImportManager:
         fields = self.get_model_fields(model)
         raw_datas = self.parse_csv_file_dictreader(file_path, fields)
         if raw_datas:
+            # # removed ignore_fields from the list if provided by the user
+            # ignore_fields = []
+            # for ignore_field in params.get('ignore_fields', []):
+            #     if ignore_field in raw_datas[0].keys():
+            #         ignore_fields.append(ignore_field)
+            # raw_datas = [{k:v for k,v in raw_data.items if k not in ignore_fields} for raw_data in raw_datas]
             self.load_batch(model, raw_datas)
 
     def get_model_fields(self, model):
