@@ -333,7 +333,7 @@ To set groups on a user you can remove previous groups with "unlink all".
 
 ## Translations
 
-To set the translation of a translatable field, use the **languages** option.
+To set the translation of a translatable field, use the **languages** option. This option can be added at the group level.
 Example:
 ```yml
     Mail Templates:

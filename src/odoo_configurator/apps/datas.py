@@ -79,6 +79,7 @@ class OdooDatas(base.OdooModule):
         model = datas.pop('model', False)
         load_fields = []
         raw_load_values = []
+        group_languages = datas.pop('languages', False)
         for data in datas:
             object_ids = False
             self.logger.info("\t\t* %s" % data)
@@ -101,7 +102,7 @@ class OdooDatas(base.OdooModule):
             no_raise = datas[data].get('no_raise', False)
             context = dict(datas[data].get('context', {}))
             values = datas[data].get('values', {})
-            languages = datas[data].get('languages', [self._context['lang']])
+            languages = datas[data].get('languages', group_languages or [self._context['lang']])
 
             # escape {{
             for val_key in values:
