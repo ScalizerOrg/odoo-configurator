@@ -6,7 +6,7 @@ import csv
 import os
 import sys
 from .logging import get_logger
-from datetime import datetime
+from datetime import datetime, timedelta
 import unidecode
 import re
 from pprint import pformat
@@ -181,8 +181,14 @@ class ImportManager:
                 else:
                     self.logger.info(message)
             stop_batch = datetime.now()
-            self.logger.info("\t\t\tBatch time %s ( %sms per object)" % (
-                stop_batch - start_batch, ((stop_batch - start_batch) / len(load_data)).microseconds / 1000))
+            batch_delta = stop_batch - start_batch
+            batch_delta_per_object = batch_delta/len(load_data)
+            display_delta = batch_delta_per_object.microseconds/1000
+            display_unit = 'ms'
+            if batch_delta_per_object > timedelta(seconds=1):
+                display_delta = batch_delta_per_object.total_seconds()
+                display_unit = 's'
+            self.logger.info(f"\t\t\tBatch time {batch_delta} ({display_delta:.3f}{display_unit} per object)")
 
         stop = datetime.now()
         self.logger.info("\t\t\tTotal time %s" % (stop - start))
