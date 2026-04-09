@@ -1,7 +1,0 @@
----
-base:
-    modules:
-        - contacts
-        - base_automation
-        - base_import_module
-        - board

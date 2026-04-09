@@ -1,5 +1,0 @@
----
-sale:
-    modules:
-        - sale_subscription
-

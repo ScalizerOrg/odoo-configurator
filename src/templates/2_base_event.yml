@@ -1,7 +1,0 @@
----
-event:
-    modules:
-        - event
-        - website_event
-        - website_event_social
-        - website_event_sale
