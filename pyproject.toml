@@ -1,47 +1,96 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "odoo-configurator"
-version = "3.7.8"
-description = "Configure and update Odoo database with YAML files"
+dynamic = ["version"]
+description = "Configure and update Odoo databases with YAML files"
 readme = "README.md"
-authors = [{ name = "Michel Perrocheau", email = "myrrkel@gmail.com" },
-    { name = "David Halgand", email = "david@scalizer.fr" }]
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
+authors = [
+    { name = "Michel Perrocheau", email = "myrrkel@gmail.com" },
+    { name = "David Halgand", email = "david@scalizer.fr" },
+]
 classifiers = [
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
-    "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Framework :: Odoo",
 ]
-keywords = ["odoo", "configurator", "xmlrpc", "yaml"]
+keywords = ["odoo", "configurator", "yaml"]
 dependencies = [
-    "beautifulsoup4",
-    "HiYaPyCo",
-    "pykeepass",
-    "cryptocode",
-    "s6r_bitwarden_cli",
-    "s6r-odoo",
-    "psycopg",
-    "pymssql",
-    "requests",
-    "unidecode",
-    "pyodbc",
-    "mysql-connector-python",
-    "slack_sdk",
-    "toml",
-    "packaging",
+    "s6r-odoo>=2.0.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+    "packaging>=23.0",
+    "requests>=2.31",
+    "unidecode>=1.3",
 ]
-requires-python = ">=3.9"
 
 [project.optional-dependencies]
-dev = ["twine", "bumpver", "pip-tools", "pytest", "check-manifest"]
+slack = [
+    "slack_sdk>=3.27",
+]
+postgresql = [
+    "psycopg[binary]>=3.1",
+]
+mysql = [
+    "mysql-connector-python>=8.0",
+]
+mssql = [
+    "pyodbc>=5.0",
+    "pymssql>=2.3",
+]
+all-db = [
+    "odoo-configurator[postgresql,mysql,mssql]",
+]
+dev = [
+    "odoo-configurator[slack,postgresql]",
+    "pytest>=8.0",
+    "pytest-mock>=3.14",
+    "ruff>=0.4",
+    "mypy>=1.10",
+]
+
+[project.scripts]
+odoo-configurator = "odoo_configurator.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/ScalizerOrg/odoo-configurator"
 Changelog = "https://github.com/ScalizerOrg/odoo-configurator/blob/main/CHANGELOG.md"
 
-[project.scripts]
-odoo-configurator = "odoo_configurator.__main__:main"
+# ── Version from git tags (e.g. v4.0.0) ───────────────────────────────────────
+# To release: git tag v4.0.0 && git push origin v4.0.0
+# During development without a tag, version will show as 0.0.dev0+g<hash>
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/odoo_configurator/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/odoo_configurator"]
+
+# ── Ruff ──────────────────────────────────────────────────────────────────────
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["odoo_configurator"]
+
+# ── Pytest ────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+
+# ── Mypy ─────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.10"
+strict = false
+ignore_missing_imports = true

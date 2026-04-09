@@ -1,47 +1,81 @@
-# Copyright (C) 2024 - Scalizer (<https://www.scalizer.fr>).
+# Copyright 2025 Scalizer (<https://www.scalizer.fr>)
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html).
 
-from .logging import get_logger
+"""
+Utils — path resolution and miscellaneous helpers.
+
+The key improvement over the old Utils class:
+  - Takes an explicit base_path instead of reading sys.argv[1] at call time.
+  - No god-object reference — just a Path and a search order.
+  - Raises FileNotFoundError with a clear message that names all searched paths.
+"""
+
+from __future__ import annotations
+
+import logging
 import os
-import sys
+from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
 
 class Utils:
-    """This class is intended to provide utility functions which are not related to a specific configurator app.
-    Methods starting with 'get_' will automatically be callable from within yaml files,
-    as per similar methods in OdooConnection Class (get_ref, get_record, etc.) """
+    """
+    Utility helpers, anchored to a base directory.
 
-    def __init__(self, configurator):
-        self.configurator = configurator
-        self.logger = get_logger("Utils".ljust(20))
+    base_path: root directory for relative file resolution (typically the
+               directory containing the top-level YAML config file).
+    """
 
-    def get_env_var(self, var_name):
-        var = os.environ.get(var_name)
-        if not var:
-            self.logger.warning(f"{var} Environment Variable not found or empty")
-        return var
+    def __init__(self, base_path: Path | str | None = None) -> None:
+        self.base_path = Path(base_path).resolve() if base_path else Path.cwd()
 
-    @staticmethod
-    def get_file_full_path(path):
+    def resolve_path(self, path: str) -> str:
+        """
+        Resolve a relative file path to an absolute path.
+
+        Search order:
+          1. As given (absolute or relative to cwd)
+          2. Relative to base_path
+          3. Relative to base_path / 'datas'
+
+        Returns the absolute path as a string.
+        Raises FileNotFoundError if not found in any location.
+        """
         if not path:
-            return ''
-        param_path = path
-        if not os.path.isfile(path):
-            path = os.path.join(os.path.dirname(sys.argv[1]), param_path)
-        if not os.path.isfile(path):
-            path = os.path.join(os.path.dirname(sys.argv[1]), 'datas', param_path)
-        if not os.path.isfile(path):
-            raise FileNotFoundError('%s not found!' % param_path)
-        return path
+            return ""
+        p = Path(path)
+        candidates = [
+            p,
+            self.base_path / p,
+            self.base_path / "datas" / p,
+        ]
+        for candidate in candidates:
+            if candidate.is_file():
+                return str(candidate.resolve())
+        searched = "\n  ".join(str(c.resolve()) for c in candidates)
+        raise FileNotFoundError(
+            f"File not found: '{path}'\nSearched:\n  {searched}"
+        )
 
-    @staticmethod
-    def get_dir_full_path(path):
+    def resolve_dir(self, path: str) -> str:
+        """
+        Resolve a relative directory path to an absolute path.
+
+        Same search order as resolve_path but checks for directories.
+        """
         if not path:
-            return ''
-        param_path = path
-        if not os.path.isdir(path):
-            path = os.path.join(os.path.dirname(sys.argv[1]), param_path)
-        if not os.path.isdir(path):
-            path = os.path.join(os.path.dirname(sys.argv[1]), 'datas', param_path)
-        if not os.path.isdir(path):
-            raise NotADirectoryError('%s not found!' % param_path)
-        return path
+            return ""
+        p = Path(path)
+        candidates = [
+            p,
+            self.base_path / p,
+            self.base_path / "datas" / p,
+        ]
+        for candidate in candidates:
+            if candidate.is_dir():
+                return str(candidate.resolve())
+        searched = "\n  ".join(str(c.resolve()) for c in candidates)
+        raise NotADirectoryError(
+            f"Directory not found: '{path}'\nSearched:\n  {searched}"
+        )

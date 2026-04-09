@@ -128,3 +128,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .idea/
+\n# hatch-vcs generated\nsrc/odoo_configurator/_version.py
