@@ -50,7 +50,14 @@ class OdooConnection:
         self._load_cache()
         self._compute_url()
         try:
-            self.odoo = Orm(self._url, self._dbname, self._user, self._password, debug_xmlrpc=debug_xmlrpc, lang=kwargs.get('lang','fr_FR'))
+            self.odoo = Orm(
+                self._url, self._dbname, self._user, self._password,
+                version=self._version,
+                http_user=self._http_user,
+                http_password=self._http_password,
+                debug_xmlrpc=debug_xmlrpc,
+                lang=kwargs.get('lang', 'fr_FR'),
+            )
         except ConnectionError as err:
             self.logger.error(err)
             exit(1)
@@ -62,15 +69,20 @@ class OdooConnection:
         if createdb:
             self._create_db()
         if self.odoo.uid:
-            self.common = self.odoo.common
-            self.object = self.odoo.object
             self.uid = self.odoo.uid
+            if not self._use_json2:
+                self.common = self.odoo.common
+                self.object = self.odoo.object
         else:
             self._prepare_connection()
 
     @property
     def context(self):
         return self._context
+
+    @property
+    def _use_json2(self):
+        return bool(self._version) and float(self._version) >= 19
 
     def _load_cache(self):
         self._cache = {}
@@ -136,6 +148,8 @@ class OdooConnection:
         self.logger.debug("\t " + "%s " * (len(args) - 2) % args[2:])
         self.logger.debug("*" * 50)
         try:
+            if self._use_json2:
+                return self.odoo.execute_odoo(*args, no_raise=no_raise)
             res = self.object.execute_kw(self._dbname, self.uid, self._password, *args)
             return res
         except Exception as e:
@@ -168,9 +182,13 @@ class OdooConnection:
             self._configurator.get_external_config_xmlid_cache()
         if external_id in self.xmlid_cache:
             return self.xmlid_cache[external_id]
-        res = self.execute_odoo('ir.model.data',
-                                self._get_xmlrpc_method('get_object_reference'),
-                                external_id.split('.'))[1]
+        if self._use_json2:
+            ref = self.odoo.get_object_reference(external_id)
+            res = ref[1] if ref else False
+        else:
+            res = self.execute_odoo('ir.model.data',
+                                    self._get_xmlrpc_method('get_object_reference'),
+                                    external_id.split('.'))[1]
         self.logger.debug('Get ref %s > %s' % (external_id, res))
         self.xmlid_cache[external_id] = res
         return res
@@ -215,6 +233,9 @@ class OdooConnection:
         if '.' not in xml_id:
             xml_id = "external_config." + xml_id
         try:
+            if self._use_json2:
+                ref = self.odoo.get_object_reference(xml_id, no_raise=no_raise)
+                return ref[1] if ref else False
             object_reference = self._get_xmlrpc_method('get_object_reference')
             res_object_reference = self.execute_odoo('ir.model.data', object_reference, xml_id.split('.'),
                                                      {'context': {'active_test': False}}, no_raise=True)

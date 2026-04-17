@@ -22,14 +22,28 @@ class OdooDefaults(base.OdooModule):
                     self.odoo_defaults(defaults)
 
     def odoo_defaults(self, defaults):
-        if defaults:
-            for default in defaults:
-                self.logger.info("\t\t* %s" % default)
-                default_value = defaults[default]['value']
-                if type(default_value) is str and default_value.startswith('get_'):
-                    default_value = self.safe_eval(default_value)
+        if not defaults:
+            return
+        for default in defaults:
+            self.logger.info("\t\t* %s" % default)
+            d = defaults[default]
+            default_value = d['value']
+            if type(default_value) is str and default_value.startswith('get_'):
+                default_value = self.safe_eval(default_value)
+            condition = d.get('condition', False)
+            if self._connection._use_json2:
+                # v19 json2 binds args via inspect.signature.bind(**kwargs) — must
+                # pass named kwargs matching ir.default.set's signature.
+                self.odoo._json2_call(
+                    'ir.default', 'set',
+                    model_name=d['model'],
+                    field_name=d['field'],
+                    value=default_value,
+                    user_id=False,
+                    company_id=False,
+                    condition=condition,
+                )
+            else:
                 self.execute_odoo('ir.default', 'set',
-                                  [defaults[default]['model'],
-                                   defaults[default]['field'],
-                                   default_value,
-                                   False, False, defaults[default].get('condition', False)], {'context': self._context})
+                                  [d['model'], d['field'], default_value, False, False, condition],
+                                  {'context': self._context})
