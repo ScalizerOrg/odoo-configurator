@@ -50,6 +50,20 @@ def sort_fields(field_names):
     return field_names
 
 
+def get_relation_id(value):
+    """Return the id of a many2one value, whatever the format returned by the ORM.
+
+    s6r-odoo turns a many2one into an OdooRecord, except when the related record has no
+    display name: the raw [id, False] value is then kept and exposed as an OdooRecordSet
+    whose first item holds the id.
+    """
+    if isinstance(value, list):
+        value = value[0] if value else False
+    if isinstance(value, int):
+        return value
+    return value and value['id']
+
+
 class ImportConfigurator(base.OdooModule):
     _name = "Import Configurator"
 
@@ -71,10 +85,14 @@ class ImportConfigurator(base.OdooModule):
             create_xmlid = kwargs.get('create_xmlid')
         else:
             create_xmlid = True
+
+        self.load_model_fields(model)
+        field_names = sort_fields(kwargs.get('fields', [])) or sort_fields(self.model_fields.keys())
+
         if 'record_ids' in kwargs:
             records = kwargs.get('record_ids')
         else:
-            records = self.odoo.model(model).search(domain, order=order_by, context=context)
+            records = self.odoo.model(model).search(domain, order=order_by, context=context, fields=field_names)
         if not records:
             self.logger.info("No records to import for %s" % model)
             return '', []
@@ -84,7 +102,6 @@ class ImportConfigurator(base.OdooModule):
         model_id = self.odoo.model('ir.model').search([('model', '=', model)],
                                                       fields=['name'],
                                                       context=context)[0]
-        self.load_model_fields(model)
         for i, record in enumerate(records):
             self.logger.info("Export %s : %s/%s", model, i+1, len(records))
             record_group = model_id['name'].title().replace(':', '')
@@ -119,7 +136,6 @@ class ImportConfigurator(base.OdooModule):
             res += '\n%s%s: %s' % (" " * 4 * 3, 'force_id', xmlid)
             res += '\n%s%s:' % (" " * 4 * 3, 'values')
 
-            field_names = sort_fields(kwargs.get('fields', [])) or sort_fields(self.model_fields.keys())
             for key in field_names:
                 field = self.model_fields[key]['field']
 
@@ -187,7 +203,7 @@ class ImportConfigurator(base.OdooModule):
 
         elif field_type in ['many2one']:
             if record[field_name]:
-                xmlid = self.get_xmlid(field['relation'], record[field_name]['id'])
+                xmlid = self.get_xmlid(field['relation'], get_relation_id(record[field_name]))
                 if xmlid:
                     name = "\n%s%s/id: %s" % (" " * 4 * 4, field_name, xmlid)
             else:
@@ -223,7 +239,7 @@ class ImportConfigurator(base.OdooModule):
             elif 'ref' in record:
                 return record.get('ref')
             else:
-                return model + '_' + record.get('id')
+                return model + '_' + str(record.get('id'))
         except Exception as e:
             self.logger.error(e, exc_info=True)
             pass
@@ -235,7 +251,8 @@ class ImportConfigurator(base.OdooModule):
             prefix = ''
             field_id = self.model_fields[field_name]['field']
             if field_id['ttype'] == 'many2one' and record[field_name]:
-                related_record = self.search_read(field_id['relation'], [('id', '=', record[field_name].id)])
+                related_record = self.search_read(field_id['relation'],
+                                                  [('id', '=', get_relation_id(record[field_name]))])
                 prefix = related_record and related_record[0]['name']
             elif field_id['ttype'] == 'many2many' and record[field_name]:
                 related_records = self.search_read(field_id['relation'], [('id', 'in', record[field_name].ids)])
@@ -315,9 +332,13 @@ class ImportConfigurator(base.OdooModule):
             create_xmlid = model_file.get('create_xmlid', True)
             fields = model_file.get('fields', [])
             display_name_prefix_fields = model_file.get('display_name_prefix_fields', [])
-            file_name = model.replace('.', '_')
             dest_path = model_file.get('dest_path', '')
-            dest_path = '%s/%s' % (os.path.dirname(self._configurator.paths[0]), dest_path or 'config')
+            base_path = os.path.dirname(self._configurator.paths[0])
+            if dest_path.endswith('.yml') or dest_path.endswith('.yaml'):
+                file_path = os.path.join(base_path, dest_path)
+            else:
+                file_name = '%s.yml' % model.replace('.', '_')
+                file_path = os.path.join(base_path, dest_path or 'config', file_name)
             params = {'model': model,
                       'domain': domain,
                       'ids': ids,
@@ -331,7 +352,8 @@ class ImportConfigurator(base.OdooModule):
                       'create_xmlid': create_xmlid,
                       'context': context}
             res, files = self.get_configurator_records(**params)
-            open('%s/%s.yml' % (dest_path, file_name), 'w').write(res)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            open(file_path, 'w').write(res)
 
                 # ##############################
                 # #  CONFIGURATOR BINARY FILE  #

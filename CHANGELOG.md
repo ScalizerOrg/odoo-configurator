@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.8.0] - 2026-08-11
+
+### Added
+- `dest_path` in `import_configurator_model_file` accepts a file name (`.yml` / `.yaml`) in addition to a directory
+- Missing destination directories are created when exporting a configurator model file
+
 ## [3.7.9] - 2026-04-17
 
 ### Added

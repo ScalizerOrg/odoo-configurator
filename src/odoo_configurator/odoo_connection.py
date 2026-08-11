@@ -16,7 +16,12 @@ from s6r_odoo import OdooConnection as Orm
 from .utils import Utils as utils
 
 import requests
+import urllib3
 from bs4 import BeautifulSoup
+
+# Certificate verification is disabled on purpose (self-signed certificates on some instances),
+# no need to warn about it on every request.
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 CACHE = "/tmp/.configurator_cache"
 

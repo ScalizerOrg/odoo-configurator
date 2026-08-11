@@ -65,6 +65,30 @@ It's also possible to provide auth for other odoo servers, these connections can
 When running odoo-configurator, you can provide the following optional arguments:
 - --lang: Set the language for the Odoo connection (default value: 'fr_FR')
 
+## Configurator Version
+
+The **configurator_version** parameter declares the minimum version of Odoo Configurator required to run the
+configuration. Use it when a configuration relies on a feature introduced in a given release, to avoid a silently
+partial execution with an older installation.
+
+```yml
+    configurator_version: 3.8.0
+```
+
+The check is done on the merged configuration, so the parameter can be declared in any of the loaded files
+(main file, `inherits` files or `release_directory` files). Versions are compared with the PEP 440 rules
+(`3.10.0` is greater than `3.9.0`).
+
+If the running odoo-configurator is older than the required version, the following error is logged and the execution
+stops immediately, before any connection to Odoo:
+
+    The yml configuration requires Odoo Configurator version >= 3.8.0 (Current version==3.7.1)
+
+The current version is the one of the installed *odoo-configurator* package, or the version declared in
+*pyproject.toml* when running from the source code.
+
+Do not confuse it with the **version** parameter, which is the version of the targeted Odoo database.
+
 ## Inherits
 
 Inherits param provide a list of configuration files witch content is merged before execution.
@@ -598,6 +622,19 @@ Actions:
             force_export_fields: ["email_formatted", "country_code"]
             excluded_fields: ["email", "country_id"]
             context: {'active_test': False}
+```
+
+The **dest_path** parameter, relative to the directory of the main configuration file, overrides the destination.
+It can be a directory (the file is then named after the model) or a file name ending with *.yml* or *.yaml*:
+```yml
+Actions:
+    import_configurator_model_file:
+        Partners in a directory:
+            model: res.partner
+            dest_path: ../config  # generates ../config/res_partner.yml
+        Partners in a given file:
+            model: res.partner
+            dest_path: ../config/my_partners.yml  # generates ../config/my_partners.yml
 ```
 
 'import_configurator_module' configuration will generate a 'studio_customization' directory in the **config** directory, with a file for each model containing the records of the module.
