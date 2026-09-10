@@ -86,8 +86,10 @@ class ImportConfigurator(base.OdooModule):
         else:
             create_xmlid = True
 
-        self.load_model_fields(model)
-        field_names = sort_fields(kwargs.get('fields', [])) or sort_fields(self.model_fields.keys())
+        fields = kwargs.get('fields', [])
+        loaded_fields = fields and fields + [f for f in display_name_prefix_fields if f not in fields]
+        self.load_model_fields(model, loaded_fields)
+        field_names = sort_fields(fields) or sort_fields(self.model_fields.keys())
 
         if 'record_ids' in kwargs:
             records = kwargs.get('record_ids')
@@ -131,6 +133,7 @@ class ImportConfigurator(base.OdooModule):
             xmlid = self.get_xmlid(model, record.id)
             if not xmlid:
                 xmlid = self.compute_xml_id(record, model, create_xmlid=create_xmlid)
+                self.rec_to_xmlid_cache[(model, record.id)] = xmlid
             res += '\n%s%s:' % (" " * 4 * 2, rec_name)
             res += '\n%s%s: %s' % (" " * 4 * 3, 'model', model)
             res += '\n%s%s: %s' % (" " * 4 * 3, 'force_id', xmlid)
@@ -153,9 +156,12 @@ class ImportConfigurator(base.OdooModule):
 
         return res, files
 
-    def load_model_fields(self, model):
+    def load_model_fields(self, model, field_list):
         self.model_fields = dict()
-        fields = self.search_read('ir.model.fields', [('model', '=', model)])
+        if field_list:
+            fields = self.search_read('ir.model.fields', [('model', '=', model), ('name', 'in', field_list)])
+        else:
+            fields = self.search_read('ir.model.fields', [('model', '=', model)])
         for field in fields:
             self.model_fields[field['name']] = {'field': field,
                                                 'default': self.default_get(model, field['name'])}
@@ -203,9 +209,13 @@ class ImportConfigurator(base.OdooModule):
 
         elif field_type in ['many2one']:
             if record[field_name]:
-                xmlid = self.get_xmlid(field['relation'], get_relation_id(record[field_name]))
+                relation_id = get_relation_id(record[field_name])
+                xmlid = self.get_xmlid(field['relation'], relation_id)
                 if xmlid:
                     name = "\n%s%s/id: %s" % (" " * 4 * 4, field_name, xmlid)
+                else:
+                    self.logger.warning("%s,%s: %s not exported, no xml id found for %s,%s",
+                                        model, record.id, field_name, field['relation'], relation_id)
             else:
                 name = "\n%s%s.id: %s" % (" " * 4 * 4, field_name, 'False')
         elif field_type in ['char', 'date', 'datetime', 'selection']:
