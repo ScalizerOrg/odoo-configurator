@@ -107,12 +107,19 @@ class OdooModules(base.OdooModule):
             for module in modules:
                 self.logger.info('\t\t* %s' % module)
                 if self._uninstalled_modules_cache.get(module).get('state') != 'uninstalled':
-                    to_uninstall.append(self._uninstalled_modules_cache.get(module).get('id'))
+                    to_uninstall.append((module, self._uninstalled_modules_cache.get(module).get('id')))
 
-            for m in to_uninstall:
-                self.execute_odoo('ir.module.module', 'button_immediate_uninstall', [m], no_raise=True)
+            for module, module_id in to_uninstall:
+                if self._connection._use_json2:
+                    try:
+                        self.odoo._json2_call('ir.module.module', 'button_immediate_uninstall', ids=[module_id])
+                    except Exception as e:
+                        self.logger.error('\t\t* %s uninstall failed: %s' % (module, e))
+                        continue
+                else:
+                    self.execute_odoo('ir.module.module', 'button_immediate_uninstall', [module_id], no_raise=True)
                 time.sleep(3)
-                self.logger.info('\t\t* %s uninstalled' % m)
+                self.logger.info('\t\t* %s uninstalled' % module)
 
     def install_odoo_theme(self, module):
         if not self._modules_theme_cache:
