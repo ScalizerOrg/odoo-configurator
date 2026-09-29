@@ -208,6 +208,33 @@ If the record with the xml id provided with force_id don't exist, the record wil
                     name: Admin User
 ```
 
+## Create or update records with a search key
+
+Without force_id, the record is searched with the `key` parameter: a comma-separated list of fields
+(default: `name`) whose values are taken from `values`.
+If a record matches, it is updated, otherwise it is created.
+Every key field must have a value in `values`: empty key fields are left out of the search domain,
+so with no key value at all, the first record of the model would be updated.
+
+```yml
+    Records to create or update:
+        datas:
+            My partner:
+                model: res.partner
+                key: ref
+                values:
+                    name: Partner 1
+                    ref: PARTNER1
+            Add field xmlid if missing:
+                model: ir.model.data
+                key: module,name
+                values:
+                    model: ir.model.fields
+                    module: external_config
+                    name: product_template_x_my_field
+                    res_id: get_search_id('ir.model.fields', [('model', '=', 'product.template'), ('name', '=', 'x_my_field')])
+```
+
 ## Load records
 
 Using load parameter will speed up creation and update of record compared to single record update.
